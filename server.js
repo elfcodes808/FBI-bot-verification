@@ -3,7 +3,7 @@ const crypto = require("crypto");
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Password protection for /flagged
+// Password protection for /flagged and /flaggedjson
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "FBI-Blacklist-0913@";
 
 // In-memory flagged users (use DB for production)
@@ -28,7 +28,7 @@ app.get("/verify", (req, res) => {
   res.send(`<h2>✅ Verification Complete</h2><p>Your IP has been hashed and recorded.</p>`);
 });
 
-// === Flagged Users Dashboard (Password Protected) ===
+// === Flagged Users Dashboard (Password Protected, HTML) ===
 app.get("/flagged", (req, res) => {
   const { password } = req.query;
 
@@ -42,6 +42,17 @@ app.get("/flagged", (req, res) => {
   }
   html += `</ul>`;
   res.send(html);
+});
+
+// === Flagged Users API (Password Protected, JSON) ===
+app.get("/flaggedjson", (req, res) => {
+  const { password } = req.query;
+
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  res.json(flaggedUsers);
 });
 
 app.listen(port, () => {
